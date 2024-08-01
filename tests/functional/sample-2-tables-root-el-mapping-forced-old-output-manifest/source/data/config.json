@@ -1,0 +1,71 @@
+{
+    "parameters": {
+        "mapping" : {
+			"id": {
+				"type": "column",
+				"mapping": {
+					"destination": "order_id",
+					"primaryKey": true
+				}
+			},
+			"date": {
+				"type": "column",
+				"mapping": {
+					"destination": "order_date"
+				}
+			},
+			"cust_name": {
+				"type": "column",
+				"mapping": {
+					"destination": "customer_name"
+				}
+			},
+			"order-item": {
+				"type": "table",
+				"destination": "order-items",
+				"parentKey": {
+					"primaryKey": true,
+					"destination": "order_id"
+				},
+				"tableMapping": {
+					"row_nr": {
+						"type": "column",
+						"mapping": {
+							"destination": "row_nr",
+
+							"primaryKey": true
+						}
+					},
+					"price.xml_attr_currency": {
+						"type": "column",
+						"mapping": {
+							"destination": "currency"
+						}
+					},
+					"price.txt_content_": {
+						"type": "column",
+						"mapping": {
+							"destination": "price_value"
+						}
+					},
+					"item": {
+						"type": "column",
+						"mapping": {
+							"destination": "item_name"
+						}
+					}
+				}
+			}},
+        "incremental": false,
+        "root_node": "root_el",
+        "in_type": "tables"
+    },
+    "image_parameters": {},
+    "action": "run",
+	"storage": {
+		"output": {
+			"data_type_support": "authoritative"
+		}
+	},
+    "authorization": {}
+}

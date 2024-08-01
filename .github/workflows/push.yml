@@ -8,6 +8,7 @@ env:
     KBC_DEVELOPERPORTAL_APP: kds-team.processor-json2csv
     KBC_DEVELOPERPORTAL_USERNAME: kds-team+processor_json2csv_github_actions
     KBC_DEVELOPERPORTAL_PASSWORD: '${{ secrets.KBC_DEVELOPERPORTAL_PASSWORD }}'
+    KBC_DATA_TYPE_SUPPORT: "none"
 
     DOCKERHUB_USER: '${{ secrets.DOCKERHUB_USER }}'
     DOCKERHUB_TOKEN: '${{ secrets.DOCKERHUB_TOKEN }}'
@@ -74,6 +75,7 @@ jobs:
                 name: 'Run tests'
                 run: | 
                     docker run \
+                    -e KBC_DATA_TYPE_SUPPORT \
                     ${{env.APP_IMAGE}} composer ci
 
     deploy:

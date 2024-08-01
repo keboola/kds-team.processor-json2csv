@@ -1,50 +1,41 @@
 <?php
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 namespace esnerda\Json2CsvProcessor;
 
+use Keboola\CsvTable\Table;
 use Keboola\Json\Analyzer;
 use Keboola\Json\Parser;
 use Keboola\Json\Structure;
 use Keboola\CsvMap\Mapper;
+use Psr\Log\LoggerInterface;
 
-/**
- * Description of JsonToCSvParser
- *
- * @author esner
- */
 class JsonToCSvParser
 {
-    private $logger;
+    private LoggerInterface $logger;
     private $parser;
     private $type;
 
-    public function __construct($mapping, $logger, $type)
+    public function __construct(array $mapping, $logger, $type)
     {
         $this->logger = $logger;
         $this->type = $type;
         if ($mapping) {
-            $this->parser = new Mapper($mapping, $type);
+            $this->parser = new Mapper($mapping, type: $type);
         } else {
             $this->parser = new Parser(new Analyzer($logger, new Structure(), true));
         }
     }
 
-    public function parse($json_data)
+    public function parse($jsonData)
     {
-        $type = $this->getType($json_data);
-        if (!is_array($json_data)) {
-            $json_data = [$json_data];
+        $type = $this->getType($jsonData);
+        if (!is_array($jsonData)) {
+            $jsonData = [$jsonData];
         }
         if ($this->parser instanceof Mapper) {
-            $this->parser->parse($json_data);
+            $this->parser->parse($jsonData);
         } else {
-            $this->parser->process($json_data, $type);
+            $this->parser->process($jsonData, $type);
         }
     }
 
@@ -53,21 +44,12 @@ class JsonToCSvParser
         return $this->parser->getCsvFiles();
     }
 
-    private function getType($json_data)
+    private function getType($jsonData)
     {
-        $type = key($json_data);
+        $type = key((array) $jsonData);
         if (!is_string ($type)) {
             $type = 'root';
         }
         return $type;
-    }
-
-    public function getResult()
-    {
-        return $this->parser->getCsvFiles();
-    }
-
-    private function addRowNumber($json)
-    {
     }
 }

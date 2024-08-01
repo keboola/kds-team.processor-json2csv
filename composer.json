@@ -14,25 +14,27 @@
     "description": "Convert Json files to CSV",
     "type": "project",
     "require": {
-        "PHP": "^7.1",
-        "keboola/php-component": "^4.1",
-        "keboola/json-parser": "^2.1",
-        "keboola/csvmap": "^0.5"
+        "PHP": "^8.1",
+        "keboola/php-component": "^10.0",
+        "keboola/json-parser": "^4.0",
+        "keboola/csvmap": "~2.1.0"
     },
     "require-dev": {
-        "jakub-onderka/php-parallel-lint": "^1.0",
-        "keboola/coding-standard": "^1.0",
-        "keboola/php-temp": "^1.0",
-        "phpstan/phpstan-shim": "^0.9.2",
-        "phpunit/phpunit": "^7.0",
-        "slevomat/coding-standard": "4.4.6",
+        "php-parallel-lint/php-parallel-lint": "^1.0",
+        "keboola/coding-standard": "^15.0",
+        "keboola/php-temp": "^2.0",
+        "phpstan/phpstan": "^1.0",
+        "phpunit/phpunit": "^9.0",
         "squizlabs/php_codesniffer": "~3.2",
-        "symfony/process": "^4.0",
-        "keboola/datadir-tests": "2.3.1"
+        "symfony/process": "^6.4",
+        "keboola/datadir-tests": "^5.0"
     },
     "config": {
         "sort-packages": true,
-        "optimize-autoloader": true
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
     },
     "scripts": {
         "tests-phpunit": "phpunit",

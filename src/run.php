@@ -14,7 +14,7 @@ try {
         putenv("KBC_DATADIR=$argv[1]");
     }
     $app = new Component($logger);
-    $app->run();
+    $app->execute();
     $logger->info("Conversion finished..");
     exit(0);
 } catch (UserException $e) {

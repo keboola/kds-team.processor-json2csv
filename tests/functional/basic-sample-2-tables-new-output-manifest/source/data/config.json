@@ -1,0 +1,16 @@
+{
+    "parameters": {
+        "mapping": [],
+        "incremental": false,
+        "root_node": "",
+        "in_type": "tables"
+    },
+    "image_parameters": {},
+    "action": "run",
+    "storage": {
+        "output": {
+            "data_type_support": "authoritative"
+        }
+    },
+    "authorization": {}
+}
