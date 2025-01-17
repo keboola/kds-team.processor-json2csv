@@ -33,15 +33,12 @@ pub struct TableMapping {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(tag = "type", deny_unknown_fields = false)]
+#[serde(tag = "type")]
 pub enum MappingType {
     #[serde(rename = "column")]
-    Column { 
-        #[serde(flatten)]
-        mapping: ColumnMapping 
-    },
+    Column { mapping: ColumnMapping },
     #[serde(rename = "table")]
-    Table(#[serde(flatten)] TableMapping),
+    Table(TableMapping),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
