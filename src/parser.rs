@@ -37,24 +37,12 @@ impl Parser {
             .unwrap_or("")
             .to_string();
 
-        if self.config.parameters.add_file_name {
-            let root_table = self
-                .tables
-                .entry("root".to_string())
-                .or_insert_with(|| TableData {
-                    headers: vec![
-                        "id".to_string(),
-                        "name".to_string(),
-                        "keboola_file_name_col".to_string(),
-                    ],
-                    rows: Vec::new(),
-                });
-            if !root_table
-                .headers
-                .contains(&"keboola_file_name_col".to_string())
-            {
-                root_table.headers.push("keboola_file_name_col".to_string());
-            }
+        // Initialize root table with default headers if it doesn't exist
+        if !self.tables.contains_key("root") {
+            self.tables.insert("root".to_string(), TableData {
+                headers: Vec::new(),
+                rows: Vec::new(),
+            });
         }
 
         // If root_node is specified, get that node first
@@ -67,13 +55,11 @@ impl Parser {
         // Handle both array and object inputs
         match root_value {
             Value::Array(arr) => {
-                // If it's an array, process each item as a root object
                 for item in arr {
                     self.process_value(item, "root".to_string(), None, &file_name)?;
                 }
             }
             _ => {
-                // Otherwise process it as a single object
                 self.process_value(root_value, "root".to_string(), None, &file_name)?;
             }
         }
@@ -91,167 +77,61 @@ impl Parser {
         match value {
             Value::Object(obj) => {
                 let mut row = HashMap::new();
-                let mut headers = Vec::new();
-
-                // Add file name column if configured and at root level
-                if self.config.parameters.add_file_name
-                    && (parent_path.is_none() || parent_path.as_deref() == Some("root"))
-                {
-                    headers.push("keboola_file_name_col".to_string());
-                    row.insert(
-                        "keboola_file_name_col".to_string(),
-                        format!("{} ", file_name),
-                    );
-                }
 
                 // Process each field in the object
                 for (key, val) in obj {
                     match val {
-                        Value::Object(_) => continue,
+                        Value::Object(_) => {
+                            // Process nested objects recursively
+                            self.process_value(val, key.clone(), Some(table_name.clone()), file_name)?;
+                        }
                         Value::Array(arr) => {
                             // Process array items as a separate table
                             for (i, item) in arr.iter().enumerate() {
-                                let parent_id = if !self.config.parameters.mapping.is_empty() {
-                                    // If we have a mapping and this object has an ID field, use that
-                                    if let Some(id) = obj.get("id") {
-                                        // Add trailing space to IDs ending in certain digits
-                                        let id_str = self.format_value(id);
-                                        if id_str.trim().ends_with('2') {
-                                            format!("{} ", id_str.trim())
-                                        } else {
-                                            id_str
-                                        }
-                                    } else {
-                                        let base_id = format!("{}_{}", key, i);
-                                        if i == 1 {
-                                            format!("{} ", base_id)
-                                        } else {
-                                            base_id
-                                        }
-                                    }
-                                } else {
-                                    let base_id = format!("{}_{}", key, i);
-                                    if i == 1 {
-                                        format!("{} ", base_id)
-                                    } else {
-                                        base_id
-                                    }
-                                };
-                                let child_table = if !self.config.parameters.mapping.is_empty() {
-                                    if let Some(mapping) =
-                                        self.config.parameters.mapping.values().next()
-                                    {
-                                        match mapping {
-                                            MappingType::Table(table_mapping) => {
-                                                table_mapping.destination.clone()
-                                            }
-                                            _ => key.clone(),
-                                        }
-                                    } else {
-                                        key.clone()
-                                    }
-                                } else {
-                                    key.clone()
-                                };
-                                self.process_value(item, child_table, Some(parent_id), file_name)?;
+                                let parent_id = format!("{}_{}", key, i);
+                                self.process_value(item, key.clone(), Some(parent_id), file_name)?;
                             }
                         }
                         _ => {
-                            let header = if table_name == "root" {
-                                key.clone()
-                            } else if key == "id" {
-                                "item_id".to_string()
-                            } else {
-                                key.clone()
-                            };
-                            headers.push(header.clone());
-                            row.insert(header, self.format_value(val));
+                            let value_str = self.format_value(val);
+                            row.insert(key.clone(), value_str);
+                            
+                            // Add header if it doesn't exist
+                            let table = self.tables.get_mut(&table_name).unwrap();
+                            if !table.headers.contains(key) {
+                                table.headers.push(key.clone());
+                            }
                         }
                     }
                 }
 
                 // Add parent ID if this is a child table
                 if let Some(parent_id) = parent_path {
-                    let parent_id_header = if !self.config.parameters.mapping.is_empty() {
-                        if let Some(mapping) = self.config.parameters.mapping.values().next() {
-                            match mapping {
-                                MappingType::Table(table_mapping) => {
-                                    if let Some(parent_key) = &table_mapping.parent_key {
-                                        parent_key.destination.clone()
-                                    } else {
-                                        "JSON_parentId".to_string()
-                                    }
-                                }
-                                _ => "JSON_parentId".to_string(),
-                            }
-                        } else {
-                            "JSON_parentId".to_string()
-                        }
-                    } else {
-                        "JSON_parentId".to_string()
-                    };
-                    headers.push(parent_id_header.clone());
-                    row.insert(parent_id_header, parent_id);
+                    row.insert("JSON_parentId".to_string(), parent_id);
+                    
+                    // Add JSON_parentId header if it doesn't exist
+                    let table = self.tables.get_mut(&table_name).unwrap();
+                    if !table.headers.contains(&"JSON_parentId".to_string()) {
+                        table.headers.push("JSON_parentId".to_string());
+                    }
                 }
 
-                // Initialize or update the table
-                let table = self.tables.entry(table_name.clone()).or_insert_with(|| {
-                    let default_headers =
-                        if table_name == "root" && !self.config.parameters.root_node.is_empty() {
-                            vec!["id".to_string()]
-                        } else if table_name == "root" {
-                            vec!["id".to_string(), "name".to_string()]
-                        } else if !self.config.parameters.mapping.is_empty() {
-                            if let Some(mapping) = self.config.parameters.mapping.values().next() {
-                                match mapping {
-                                    MappingType::Table(table_mapping) => {
-                                        let mut headers =
-                                            vec!["item_id".to_string(), "quantity".to_string()];
-                                        if let Some(parent_key) = &table_mapping.parent_key {
-                                            headers.push(parent_key.destination.clone());
-                                        } else {
-                                            headers.push("JSON_parentId".to_string());
-                                        }
-                                        headers
-                                    }
-                                    _ => vec![
-                                        "item_id".to_string(),
-                                        "quantity".to_string(),
-                                        "JSON_parentId".to_string(),
-                                    ],
-                                }
-                            } else {
-                                vec![
-                                    "item_id".to_string(),
-                                    "quantity".to_string(),
-                                    "JSON_parentId".to_string(),
-                                ]
-                            }
-                        } else {
-                            vec![
-                                "item_id".to_string(),
-                                "quantity".to_string(),
-                                "JSON_parentId".to_string(),
-                            ]
-                        };
-                    TableData {
-                        headers: default_headers,
-                        rows: Vec::new(),
-                    }
-                });
-
-                // Update headers if needed
-                for header in headers {
-                    if !table.headers.contains(&header) {
-                        table.headers.push(header);
+                // Add file name if configured
+                if self.config.parameters.add_file_name && table_name == "root" {
+                    row.insert("keboola_file_name_col".to_string(), format!("{} ", file_name));
+                    
+                    // Add keboola_file_name_col header if it doesn't exist
+                    let table = self.tables.get_mut(&table_name).unwrap();
+                    if !table.headers.contains(&"keboola_file_name_col".to_string()) {
+                        table.headers.push("keboola_file_name_col".to_string());
                     }
                 }
 
                 // Fill in missing values with empty strings
+                let table = self.tables.get_mut(&table_name).unwrap();
                 let mut row_with_all_headers = HashMap::new();
                 for header in &table.headers {
-                    row_with_all_headers
-                        .insert(header.clone(), row.get(header).cloned().unwrap_or_default());
+                    row_with_all_headers.insert(header.clone(), row.get(header).cloned().unwrap_or_default());
                 }
 
                 table.rows.push(row_with_all_headers);

@@ -33,12 +33,15 @@ pub struct TableMapping {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-#[serde(tag = "type")]
+#[serde(tag = "type", deny_unknown_fields = false)]
 pub enum MappingType {
     #[serde(rename = "column")]
-    Column { mapping: ColumnMapping },
+    Column { 
+        #[serde(flatten)]
+        mapping: ColumnMapping 
+    },
     #[serde(rename = "table")]
-    Table(TableMapping),
+    Table(#[serde(flatten)] TableMapping),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -61,7 +64,6 @@ pub struct Parameters {
 
 impl Config {
     pub fn validate(&self) -> Result<(), ConfigError> {
-        // Add validation logic here if needed
         Ok(())
     }
 }
