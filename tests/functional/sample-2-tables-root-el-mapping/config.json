@@ -1,13 +1,6 @@
 {
   "parameters": {
     "mapping": {
-      "id": {
-        "type": "column",
-        "mapping": {
-          "destination": "order_id",
-          "primary_key": true
-        }
-      },
       "items": {
         "type": "table",
         "destination": "order_items",
@@ -16,20 +9,27 @@
           "primary_key": true
         },
         "tableMapping": {
-          "quantity": {
-            "type": "column",
-            "mapping": {
-              "destination": "quantity",
-              "primary_key": false
-            }
-          },
           "id": {
             "type": "column",
             "mapping": {
               "destination": "item_id",
               "primary_key": true
             }
+          },
+          "quantity": {
+            "type": "column",
+            "mapping": {
+              "destination": "quantity",
+              "primary_key": false
+            }
           }
+        }
+      },
+      "id": {
+        "type": "column",
+        "mapping": {
+          "destination": "order_id",
+          "primary_key": true
         }
       }
     },

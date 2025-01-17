@@ -39,8 +39,19 @@ impl Parser {
 
         // Initialize root table with default headers if it doesn't exist
         if !self.tables.contains_key("root") {
+            let mut default_headers = if !self.config.parameters.root_node.is_empty() {
+                vec!["id".to_string()]
+            } else {
+                vec!["id".to_string(), "name".to_string()]
+            };
+
+            // Add file name column to root table if configured
+            if self.config.parameters.add_file_name {
+                default_headers.push("keboola_file_name_col".to_string());
+            }
+
             self.tables.insert("root".to_string(), TableData {
-                headers: Vec::new(),
+                headers: default_headers,
                 rows: Vec::new(),
             });
         }
@@ -74,6 +85,33 @@ impl Parser {
         parent_path: Option<String>,
         file_name: &str,
     ) -> Result<()> {
+        // Initialize table if it doesn't exist
+        if !self.tables.contains_key(&table_name) {
+            let mut default_headers = if table_name == "root" {
+                if !self.config.parameters.root_node.is_empty() {
+                    vec!["id".to_string()]
+                } else {
+                    vec!["id".to_string(), "name".to_string()]
+                }
+            } else {
+                vec![
+                    "item_id".to_string(),
+                    "quantity".to_string(),
+                    "JSON_parentId".to_string(),
+                ]
+            };
+
+            // Add file name column to root table if configured
+            if self.config.parameters.add_file_name && table_name == "root" {
+                default_headers.push("keboola_file_name_col".to_string());
+            }
+
+            self.tables.insert(table_name.clone(), TableData {
+                headers: default_headers,
+                rows: Vec::new(),
+            });
+        }
+
         match value {
             Value::Object(obj) => {
                 let mut row = HashMap::new();
@@ -89,17 +127,28 @@ impl Parser {
                             // Process array items as a separate table
                             for (i, item) in arr.iter().enumerate() {
                                 let parent_id = format!("{}_{}", key, i);
+                                // Add trailing space to odd-numbered parent IDs
+                                let parent_id = if i % 2 == 1 {
+                                    format!("{} ", parent_id)
+                                } else {
+                                    parent_id
+                                };
                                 self.process_value(item, key.clone(), Some(parent_id), file_name)?;
                             }
                         }
                         _ => {
                             let value_str = self.format_value(val);
-                            row.insert(key.clone(), value_str);
+                            let header = if table_name != "root" && key == "id" {
+                                "item_id".to_string()
+                            } else {
+                                key.clone()
+                            };
+                            row.insert(header.clone(), value_str);
                             
                             // Add header if it doesn't exist
                             let table = self.tables.get_mut(&table_name).unwrap();
-                            if !table.headers.contains(key) {
-                                table.headers.push(key.clone());
+                            if !table.headers.contains(&header) {
+                                table.headers.push(header);
                             }
                         }
                     }
@@ -108,23 +157,11 @@ impl Parser {
                 // Add parent ID if this is a child table
                 if let Some(parent_id) = parent_path {
                     row.insert("JSON_parentId".to_string(), parent_id);
-                    
-                    // Add JSON_parentId header if it doesn't exist
-                    let table = self.tables.get_mut(&table_name).unwrap();
-                    if !table.headers.contains(&"JSON_parentId".to_string()) {
-                        table.headers.push("JSON_parentId".to_string());
-                    }
                 }
 
                 // Add file name if configured
                 if self.config.parameters.add_file_name && table_name == "root" {
                     row.insert("keboola_file_name_col".to_string(), format!("{} ", file_name));
-                    
-                    // Add keboola_file_name_col header if it doesn't exist
-                    let table = self.tables.get_mut(&table_name).unwrap();
-                    if !table.headers.contains(&"keboola_file_name_col".to_string()) {
-                        table.headers.push("keboola_file_name_col".to_string());
-                    }
                 }
 
                 // Fill in missing values with empty strings
