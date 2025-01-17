@@ -1,1 +1,21 @@
-vendor/
+# Rust specific
+target/
+Cargo.lock
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Tests
+tests/
+
+# Documentation
+*.md
+
+# Misc
+.env
+*.log

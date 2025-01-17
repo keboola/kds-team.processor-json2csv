@@ -1,3 +1,0 @@
-"root_el_orders_order_id","root_el_orders_order_date","root_el_orders_order_cust_name","root_el_orders_order_order-item","root_el_keboola_file_name_col"
-"1","2018-01-01","David","root_el.root_el.orders.order_e405d689958eba767c0815395083049d","sample1.xml.json"
-"2","2018-07-02","Tom","root_el.root_el.orders.order_a0e835a5507c22d37062230f7895f7b0","sample2.xml.json"

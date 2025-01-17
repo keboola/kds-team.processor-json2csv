@@ -1,0 +1,41 @@
+{
+  "parameters": {
+    "mapping": {
+      "items": {
+        "type": "table",
+        "destination": "order_items",
+        "parent_key": {
+          "destination": "order_id",
+          "primary_key": true
+        },
+        "tableMapping": {
+          "quantity": {
+            "type": "column",
+            "mapping": {
+              "destination": "quantity",
+              "primary_key": false
+            }
+          },
+          "id": {
+            "type": "column",
+            "mapping": {
+              "destination": "item_id",
+              "primary_key": true
+            }
+          }
+        }
+      },
+      "id": {
+        "type": "column",
+        "mapping": {
+          "destination": "order_id",
+          "primary_key": true
+        }
+      }
+    },
+    "incremental": false,
+    "root_node": "data",
+    "in_type": "tables",
+    "add_file_name": false
+  }
+}

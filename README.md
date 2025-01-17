@@ -1,22 +1,43 @@
-
-
 # JSON2CSV processor
 Keboola Connection processor for JSON to CSV conversion.
 
-
 Converts JSON files to CSV. May be used as an easier way of parsing JSON values than directly in `Snowflake SQL` in conjunction with [Column to Files app](https://bitbucket.org/kds_consulting_team/kds-team.app-column-to-files)
+
+This is a Rust implementation of the JSON2CSV processor, providing improved performance and memory efficiency compared to the PHP version.
+
+## Build
+
+```bash
+cargo build --release
+```
+
+## Development
+
+### Prerequisites
+- Rust 1.74 or newer
+- Cargo (Rust's package manager)
+
+### Running Tests
+```bash
+cargo test
+```
+
+### Local Development
+```bash
+cargo run -- --data-dir /path/to/data
+```
+
+## Configuration parameters
+
+- **in_type** (enum [`files`,`tables`]) -  specifies the input folder where to look for input data. e.g. when set to `table` the processor will look for input in `/in/tables/` folder.
+- **incremental** (bool) - flag whether the resulting tables should be uploaded incrementally. Makes most sense with mapping setup, since it allows you to specify primary keys.
+- **root_node** (string) - `.` separated path to the root node of the resulting JSON - usually you only want to map the root array, not all the wrapper tags. For more info see examples below.
+- **add_file_name** (bool) - default `false` - flag whether to add the source file name column to the root object. The resulting column name is `keboola_file_name_col`. **NOTE**: Note that when you specify `root_node` the new column is added there. Also when using mapping you need to specify the mapping also for the new column name.
 
 **Credits:**
 - For JSON2CSV conversion uses Keboola developed [Json parser](https://github.com/keboola/php-jsonparser) and [CsvMap](https://github.com/keboola/php-csvmap) for analysis and automatic conversion from JSON to CSV. Supports Generic Ex -like mapping configuration.
 
 # Usage
-## Configuration parameters
-
-- **in_type** (enum [`files`,`tables`]) -  specifies the input folder where to look for input data. e.g. when set to `table` the processor will look for inpu in `/in/tables/` folder.
-- **incremental** (bool) - flag whether the resulting tables should be uploaded incrementally. Makes most sense with mapping setup, since it allows you to specify primary keys.
-- **root_node** (string) - `.` separated path to the root node of the resulting JSON - usually you only want to map the root array, not all the wrapper tags. For more info see examples below.
-- **add_file_name** (bool) - default `false` - flag whether to add the source file name column to the root object. The resulting column name is `keboola_file_name_col`. **NOTE**: Note that when you specify `root_node` the new column is added there. Also when using mapping you need to specify the mapping also for the new column name.
-
 ## Examples
 
 ### JSON example

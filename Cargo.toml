@@ -1,0 +1,22 @@
+[package]
+name = "json2csv_processor"
+version = "0.1.0"
+edition = "2021"
+authors = ["Keboola"]
+description = "Keboola Connection processor for JSON to CSV conversion"
+license = "MIT"
+
+[[bin]]
+name = "processor"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = { version = "1.0", features = ["backtrace"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+csv = "1.2"
+thiserror = "1.0"
+walkdir = "2.4"
+
+[dev-dependencies]
+tempfile = "3.8"

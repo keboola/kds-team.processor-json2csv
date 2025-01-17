@@ -4,3 +4,8 @@
 .vscode/
 nbproject/
 test.php
+
+
+# Added by cargo
+
+/target

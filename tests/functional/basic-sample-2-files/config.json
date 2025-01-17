@@ -1,0 +1,9 @@
+{
+  "parameters": {
+    "mapping": {},
+    "incremental": false,
+    "root_node": "",
+    "in_type": "files",
+    "add_file_name": false
+  }
+}

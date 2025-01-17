@@ -1,0 +1,9 @@
+{
+  "parameters": {
+    "mapping": {},
+    "incremental": false,
+    "root_node": "data",
+    "in_type": "tables",
+    "add_file_name": false
+  }
+}
