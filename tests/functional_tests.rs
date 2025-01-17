@@ -413,3 +413,53 @@ fn test_sample_with_mapping() -> Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn test_array_input() -> Result<()> {
+    let test_dir = setup_test_dir("array-input")?;
+    fs::create_dir_all(test_dir.join("expected"))?;
+    fs::create_dir_all(test_dir.join("in/files"))?;
+
+    let config = Config {
+        parameters: Parameters {
+            in_type: InputType::Files,
+            root_node: String::new(),
+            incremental: false,
+            add_file_name: false,
+            mapping: HashMap::new(),
+        },
+    };
+
+    create_config(&test_dir, &config)?;
+
+    fs::write(
+        test_dir.join("in/files/sample.json"),
+        json!([
+            {
+                "id": "1",
+                "name": "First"
+            },
+            {
+                "id": "2",
+                "name": "Second "
+            }
+        ])
+        .to_string(),
+    )?;
+
+    fs::write(
+        test_dir.join("expected/root.csv"),
+        "id,name\n\"1\",\"First\"\n\"2\",\"Second \"\n",
+    )?;
+
+    let mut parser = Parser::new(config, test_dir.join("out/tables"));
+    parser.process_file(&test_dir.join("in/files/sample.json"))?;
+    parser.write_tables()?;
+
+    compare_csv_files(
+        &test_dir.join("out/tables/root.csv"),
+        &test_dir.join("expected/root.csv"),
+    )?;
+
+    Ok(())
+}

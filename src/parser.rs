@@ -57,8 +57,26 @@ impl Parser {
             }
         }
 
-        let root_value = self.get_root_node(&json, &self.config.parameters.root_node)?;
-        self.process_value(root_value, "root".to_string(), None, &file_name)?;
+        // If root_node is specified, get that node first
+        let root_value = if !self.config.parameters.root_node.is_empty() {
+            self.get_root_node(&json, &self.config.parameters.root_node)?
+        } else {
+            &json
+        };
+
+        // Handle both array and object inputs
+        match root_value {
+            Value::Array(arr) => {
+                // If it's an array, process each item as a root object
+                for item in arr {
+                    self.process_value(item, "root".to_string(), None, &file_name)?;
+                }
+            }
+            _ => {
+                // Otherwise process it as a single object
+                self.process_value(root_value, "root".to_string(), None, &file_name)?;
+            }
+        }
 
         Ok(())
     }

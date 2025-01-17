@@ -1,6 +1,13 @@
 {
   "parameters": {
     "mapping": {
+      "id": {
+        "type": "column",
+        "mapping": {
+          "destination": "order_id",
+          "primary_key": true
+        }
+      },
       "items": {
         "type": "table",
         "destination": "order_items",
@@ -23,13 +30,6 @@
               "primary_key": true
             }
           }
-        }
-      },
-      "id": {
-        "type": "column",
-        "mapping": {
-          "destination": "order_id",
-          "primary_key": true
         }
       }
     },
