@@ -1,0 +1,4 @@
+item_id,quantity,order_id,keboola_file_name_col
+"A","10","1","sample.json"
+"B","20","1","sample.json"
+"C","30","2 ","sample.json"

@@ -1,1 +1,1 @@
-{"id":"1","items":[{"id":"A","quantity":"10"},{"id":"B","quantity":"20"}],"name":"Test"}
+{"id":"1","items":[{"item_id":"A","quantity":"10"},{"item_id":"B","quantity":"20"}],"name":"Test"}

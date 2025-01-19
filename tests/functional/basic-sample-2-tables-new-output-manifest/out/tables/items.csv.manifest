@@ -1,0 +1,1 @@
+{"columns":["item_id","quantity","JSON_parentId"],"incremental":false,"metadata":[],"primary_key":["item_id","JSON_parentId"]}
